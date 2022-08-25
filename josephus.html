@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,600,600italic,700,700italic,900,900italic%7CSource+Code+Pro:500,600" rel="stylesheet" type="text/css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z8ST4J1329"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'G-Z8ST4J1329');
+    </script>
+
+    <style>
+        body {
+            font-family: "Source Sans Pro", sans-serif;
+            color: #070707;
+            background: #f3f2f0;
+        }
+        
+        svg {
+            overflow: visible !important;
+        }
+        /* For Centering the Input Field Vertically */
+        /* For Centering the Input Field Horizontally */
+        
+        .input {
+            border: 0.5vh solid #000;
+            margin: 10px;
+            background-color: gray;
+            text-align: center;
+            border-radius: 0.5vh;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        
+        input {
+            outline-style: none;
+            box-shadow: none;
+            border-color: transparent;
+        }
+        
+         ::placeholder {
+            /* Chrome, Firefox, Opera, Safari 10.1+ */
+            color: #f3f2f0;
+            opacity: 0.5;
+            /* Firefox */
+        }
+        
+         :-ms-input-placeholder {
+            /* Internet Explorer 10-11 */
+            color: #f3f2f0;
+        }
+        
+         ::-ms-input-placeholder {
+            /* Microsoft Edge */
+            color: #f3f2f0;
+        }
+        /* Styles for Alive Person */
+        
+        .circle {
+            fill: white;
+            stroke-width: 0.5%
+        }
+        /* Styles for Dead Person */
+        
+        .filled {
+            fill: black;
+            stroke: black;
+            transition-property: fill;
+            transition-timing-function: linear;
+            stroke-width: 0.5%
+        }
+        /* Styles for Text in Large Screens */
+        
+        .largetext {
+            stroke: black;
+            stroke-width: 0.1vh;
+            font-size: large
+        }
+        /* Styles for Text in Small-Medium Screens */
+        
+        .mediumtext {
+            stroke: black;
+            stroke-width: 0.4%;
+            font-size: 15%
+        }
+        /* Styles for Winner         */
+        
+        .winner {
+            stroke: red;
+            stroke-width: 0.3vh;
+            transition-property: stroke;
+            font-size: xx-large;
+            transition-duration: 3s;
+            transition-timing-function: ease-in-out;
+        }
+        
+        input[type="submit"] {
+            border: 0.5vh solid #000;
+            font-weight: 500;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+        
+        #svg {
+            margin: 30px;
+        }
+        
+        @media screen and (min-width: 800px) {
+            #rendered_svg {
+                width: 50%;
+            }
+        }
+    </style>
+    <script type="module">
+        import init, { josephus } from "./assets/josephus_wasm/josephus_wasm.js"; window.wasm = function wasm(x, y, z) { var result = init().then(() => { result = josephus(x, y); document.getElementById('wasm_result').value = result; k(z) }); }
+    </script>
+    <title>Josephus</title>
+</head>
+
+<body>
+    <main>
+        <!-- Div to hold the SVG -->
+        <h3 style="text-align: center;">Josephus Problem Visualization</h3>
+        <h4 style="text-align: center;color:red;">Scroll down to enter values!!!</h4>
+        <div id="svg">
+            <!-- <svg xlmns="http://www.w3.org/2000/svg">
+    </svg> -->
+        </div>
+        <!-- Div for the input field -->
+        <div id="field">
+            <input type="text" class="input" id="input" placeholder="No. of Soldiers, Ex: 41">
+            <input type="text" class="input" id="input1" placeholder="People to Skip, Ex: 1">
+            <input type="text" class="input" id="input2" placeholder="Speed, Ex: 2">
+            <input type="submit" onclick="change()">
+        </div>
+    </main>
+
+    <!--Input-->
+    <div>
+        <input type="text" id="wasm_result" hidden="true">
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+    <script>
+        function h(n) {
+            let svg = '<svg xlmns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" id="rendered_svg" width="100%">'
+            svg += `<circle cx=50% cy=50% r=53.5% fill="gray"></circle>`
+            for (let i = 1; i <= n; i++) {
+
+                let sin = Math.sin(i * (2 * Math.PI) / n);
+                let cos = Math.cos(i * (2 * Math.PI) / n);
+                sin = sin.toFixed(3)
+                cos = cos.toFixed(3)
+                sin *= 50
+                cos *= 50
+
+                cos += 50
+                if (sin >= 0) {
+                    temp = Math.abs(sin)
+                    sin = 50
+                    sin -= temp
+                } else {
+                    temp = Math.abs(sin)
+                    sin = 50
+                    sin += temp
+                }
+
+                console.log(cos, sin)
+                svg += `<circle class="circle" stroke="black" cx=${cos}% cy=${sin}% r="2%" id=${i}></circle>`
+                svg += `<text class="mediumtext" x=${cos}% y=${sin}% dominant-baseline="middle" text-anchor="middle" id=${i}t>${i}</text>`
+            }
+
+            svg += '</svg>'
+            document.getElementById("svg").innerHTML = svg;
+            console.log(svg)
+        };
+        h(41);
+
+        function k(z) {
+            let speed = parseInt(z)
+            if (isNaN(speed)) {
+                speed = 1;
+            }
+            let dying_order = document.getElementById('wasm_result').value.split(',');
+            let idx = 2;
+            for (let i = 0; i < dying_order.length - 1; i++) {
+                const circle = document.getElementById(`${dying_order[i]}`);
+                circle.classList.remove("circle");
+                circle.classList.add("filled");
+                m = idx / speed
+                circle.style.transitionDelay = `${m}s`
+                idx += 2
+            }
+        }
+
+        function change(e) {
+            let x = document.getElementById('input').value;
+            let y = document.getElementById('input1').value;
+            let z = document.getElementById('input2').value;
+            if (x.length == 0 || y.length == 0 || z.length == 0) {
+                alert("Complete The Fields!")
+                return
+            }
+            h(x);
+            wasm(x, y, z);
+        }
+    </script>
+</body>
+
+</html>

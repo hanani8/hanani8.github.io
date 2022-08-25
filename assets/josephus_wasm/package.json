@@ -1,0 +1,17 @@
+{
+  "name": "josephus-wasm",
+  "collaborators": [
+    "Jai Hanani <jaihanani8@gmail.com>"
+  ],
+  "description": "Find the Survivor of the Josephus Problem",
+  "version": "0.1.0",
+  "license": "MIT/Apache-2.0",
+  "files": [
+    "josephus_wasm_bg.wasm",
+    "josephus_wasm.js",
+    "josephus_wasm.d.ts"
+  ],
+  "module": "josephus_wasm.js",
+  "types": "josephus_wasm.d.ts",
+  "sideEffects": false
+}
