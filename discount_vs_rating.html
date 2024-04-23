@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="retro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Burtin's Antibiotic Data Visualization</title>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script src="subcategories.js"></script>
+    <script src="product_types.js"></script>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@2.6.0/dist/full.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html,
+      body {
+        height: 100%; /* Ensures that html and body occupy full height */
+        margin: 0; /* Removes default margin provided by browsers */
+        padding: 0; /* Removes default padding */
+      }
+
+      @font-face {
+        font-family: "Poppins-Bold";
+        src: url("fonts/Poppins-Bold.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-Regular";
+        src: url("Poppins-Regular.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-Medium";
+        src: url("Poppins-Medium.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-SemiBold";
+        src: url("Poppins-SemiBold.ttf");
+      }
+
+      .poppins-regular {
+        font-family: "Poppins-Regular", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        font-size: 15px;
+      }
+
+      .poppins-medium {
+        font-family: "Poppins-Medium", sans-serif;
+        font-weight: 500;
+        font-style: normal;
+      }
+
+      .poppins-semibold {
+        font-family: "Poppins-SemiBold", sans-serif;
+        font-weight: 600;
+        font-style: normal;
+      }
+
+      .poppins-bold {
+        font-family: "Poppins-Bold", sans-serif;
+        font-weight: 700;
+        font-style: normal;
+      }
+      #mobileRestrictionMessage {
+        display: none;
+        text-align: center;
+        margin-top: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Add a svg area, empty -->
+    <div class="flex flex-col h-full">
+      <!-- Updated class to fill height -->
+      <div id="viz" class="flex-1 flex flex-row justify-around mt-32"></div>
+      <div class="flex flex-row justify-between">
+        <div class="flex flex-col ml-64 pb-8">
+          <div>
+            <label for="rating">Rating</label>
+            <input
+              type="range"
+              id="rating"
+              min="3"
+              max="5"
+              value="3.5"
+              class="range range-sm max-w-md"
+              step="0.5"
+            />
+            <div class="max-w-md flex justify-between text-xs px-2">
+              <span>3</span>
+              <span>3.5</span>
+              <span>4</span>
+              <span>4.5</span>
+              <span>5</span>
+            </div>
+          </div>
+          <div>
+            <label for="discount">Discount</label>
+            <input
+              type="range"
+              id="discount"
+              min="0"
+              max="50"
+              value="20"
+              class="range range-sm max-w-xs"
+              step="2"
+            />
+            <div class="max-w-xs flex justify-between text-xs px-2">
+              <span>10</span>
+              <span>20</span>
+              <span>30</span>
+              <span>40</span>
+              <span>50</span>
+            </div>
+          </div>
+          <div>
+            <label for="maxDiscount">maxDiscount</label>
+            <input
+              type="range"
+              id="maxDiscount"
+              min="10"
+              max="100"
+              value="50"
+              class="range range-sm max-w-xs"
+              step="5"
+            />
+            <div class="max-w-xs flex justify-between text-xs px-2">
+              <span>50</span>
+              <span>60</span>
+              <span>70</span>
+              <span>80</span>
+              <span>90</span>
+              <span>100</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col mr-64">
+          <div>
+            <label class="form-control max-w-xs">
+              <div class="label">
+                <span class="label-text">Pick Level</span>
+              </div>
+              <select class="select select-bordered" id="level" value="0">
+                <option value="0">All</option>
+                <option value="1">Category</option>
+                <option value="2">Sub-Category</option>
+                <option value="3">Product-Type</option>
+              </select>
+              <div class="label"></div>
+            </label>
+          </div>
+
+          <div>
+            <label class="form-control max-w-xs">
+              <div class="label">
+                <span class="label-text">Names</span>
+              </div>
+              <select class="select select-bordered" id="name"></select>
+              <div class="label"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      @font-face {
+        font-family: "Poppins-Bold";
+        src: url("fonts/Poppins-Bold.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-Regular";
+        src: url("Poppins-Regular.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-Medium";
+        src: url("Poppins-Medium.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-SemiBold";
+        src: url("Poppins-SemiBold.ttf");
+      }
+
+      .poppins-regular {
+        font-family: "Poppins-Regular", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        font-size: 15px;
+      }
+
+      .poppins-medium {
+        font-family: "Poppins-Medium", sans-serif;
+        font-weight: 500;
+        font-style: normal;
+      }
+
+      .poppins-semibold {
+        font-family: "Poppins-SemiBold", sans-serif;
+        font-weight: 600;
+        font-style: normal;
+      }
+
+      .poppins-bold {
+        font-family: "Poppins-Bold", sans-serif;
+        font-weight: 700;
+        font-style: normal;
+      }
+      #mobileRestrictionMessage {
+        display: none;
+        text-align: center;
+        margin-top: 50px;
+      }
+    </style>
+
+    <script>
+      categories = [
+        "Beauty & Hygiene",
+        "Kitchen, Garden & Pets",
+        "Cleaning & Household",
+        "Gourmet & World Food",
+        "Foodgrains, Oil & Masala",
+        "Snacks & Branded Foods",
+        "Beverages",
+        "Bakery, Cakes & Dairy",
+        "Baby Care",
+      ];
+
+      // Get the height and width of the current viewport
+      var viewportWidth = Math.max(
+        document.documentElement.clientWidth || 0,
+        window.innerWidth || 0
+      );
+      var viewportHeight = Math.max(
+        document.documentElement.clientHeight || 0,
+        window.innerHeight || 0
+      );
+
+      d3.select("body").style("background-color", "#ffdd95ff");
+
+      // set the dimensions and margins of the graph
+      const margin = { top: 10, right: 40, bottom: 30, left: 30 };
+      let width = viewportWidth - margin.left - margin.right;
+      let height = viewportHeight - margin.top - margin.bottom;
+
+      width = width / 4;
+      height = height / 2;
+
+      document.getElementById("rating").addEventListener("change", () => {
+        clearGraph(); // Clear the graph before fetching data
+        fetchData(false);
+      });
+
+      document.getElementById("discount").addEventListener("change", () => {
+        clearGraph(); // Clear the graph before fetching data
+        fetchData(false);
+      });
+
+      document.getElementById("maxDiscount").addEventListener("change", () => {
+        clearGraph(); // Clear the graph before fetching data
+        fetchData(false);
+      });
+
+      document.getElementById("level").addEventListener("change", () => {
+        const level = Number(document.getElementById("level").value);
+        if (level == 1) {
+          document.getElementById("name").innerHTML = "";
+          categories.forEach((category) => {
+            const option = document.createElement("option");
+            option.value = encodeURIComponent(category);
+            option.text = category;
+            document.getElementById("name").appendChild(option);
+          });
+        } else if (level == 2) {
+          document.getElementById("name").innerHTML = "";
+          subcategories.forEach((subcategory) => {
+            const option = document.createElement("option");
+            option.value = encodeURIComponent(subcategory);
+            option.text = subcategory;
+            document.getElementById("name").appendChild(option);
+          });
+        } else if (level == 3) {
+          document.getElementById("name").innerHTML = "";
+          product_types.forEach((product_type) => {
+            const option = document.createElement("option");
+            option.value = encodeURIComponent(product_type);
+            option.text = product_type;
+            document.getElementById("name").appendChild(option);
+          });
+        }
+
+        clearGraph(); // Clear the graph before fetching data
+
+        fetchData(false);
+      });
+
+      document.getElementById("name").addEventListener("change", () => {
+        clearGraph(); // Clear the graph before fetching data
+        fetchData(false);
+      });
+
+      function fetchData() {
+        const level = Number(document.getElementById("level").value);
+        const number = 0;
+        const name = document.getElementById("name").value;
+        const rating_threshold = document.getElementById("rating").value;
+        const discount_threshold = document.getElementById("discount").value;
+
+        const URL = `http://localhost:5000?number=${number}&level=${level}&name=${name}&rating=${rating_threshold}&discount=${discount_threshold}`;
+        console.log(URL);
+        fetch(URL)
+          .then((response) => response.json())
+          .then((D) => {
+            graph_data = D.data;
+            number_data = D.numbers;
+
+            discount = graph_data.discount;
+            rating = graph_data.product_rating;
+
+            discount_max = Math.max(...Object.values(discount));
+
+            let data = [];
+
+            keys = Object.keys(discount);
+
+            for (var i = 0; i < keys.length; i++) {
+              data.push({ x: rating[keys[i]], y: discount[keys[i]] });
+            }
+            drawGraph(data);
+            drawNumberedGraph(number_data);
+          })
+          .catch((error) => {
+            // Handle any errors here
+            console.error(error);
+          });
+      }
+
+      function clearGraph() {
+        document.getElementById("viz").innerHTML = "";
+      }
+
+      function drawGraph(data) {
+        let viz = d3
+          .select("#viz")
+          .append("svg")
+          .attr("width", width)
+          .attr("height", height)
+          .style("border", "1px solid black")
+          .append("g");
+
+        const maxDiscount = Number(
+          document.getElementById("maxDiscount").value
+        );
+
+        const xScale = d3
+          .scaleLinear()
+          .domain([2.5, 5])
+          .range([0, width])
+          .nice();
+        const yScale = d3
+          .scaleLinear()
+          .domain([0, maxDiscount])
+          .range([height, 0])
+          .nice();
+
+        // Axes
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale);
+
+        const xRating = Number(document.getElementById("rating").value);
+        const yRating = Number(document.getElementById("discount").value);
+
+        // Drawing the quadrants lines
+        viz
+          .selectAll("circle.brand")
+          .data(data)
+          .join("circle")
+          .attr("cx", (d) => xScale(d.x))
+          .attr("cy", (d) => yScale(d.y))
+          .attr("r", 5)
+          .attr("fill", "#E72929");
+
+        viz
+          .append("line")
+          .attr("x1", xScale(xRating))
+          .attr("x2", xScale(xRating))
+          .attr("y1", 0)
+          .attr("y2", height)
+          .attr("stroke", "black")
+          .attr("stroke-width", 3);
+
+        viz
+          .append("line")
+          .attr("y1", yScale(yRating))
+          .attr("y2", yScale(yRating))
+          .attr("x1", 0)
+          .attr("x2", width)
+          .attr("stroke", "black")
+          .attr("stroke-width", 3);
+
+        // Append axes to the group
+        viz
+          .append("g")
+          .attr("transform", `translate(0,${yScale(yRating)})`)
+          .style("font-family", "Poppins-Bold")
+          .call(xAxis);
+
+        viz
+          .append("g")
+          .attr("transform", `translate(${xScale(xRating)}, 0)`)
+          .style("font-family", "Poppins-Bold")
+          .call(yAxis);
+      }
+
+      function drawNumberedGraph(data) {
+        console.log(data);
+        const start = width;
+        const maxDiscount = Number(
+          document.getElementById("maxDiscount").value
+        );
+
+        let viz = d3
+          .select("#viz")
+          .append("svg")
+          .attr("width", width)
+          .attr("height", height)
+          .style("border", "1px solid black")
+          .append("g");
+
+        const xScale = d3.scaleLinear().domain([0, 5]).range([0, width]).nice();
+        const yScale = d3
+          .scaleLinear()
+          .domain([0, maxDiscount])
+          .range([height, 0])
+          .nice();
+
+        // Axes
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale);
+
+        const xRating = Number(document.getElementById("rating").value);
+        const yRating = Number(document.getElementById("discount").value);
+
+        // Drawing the quadrants lines
+        viz
+          .append("line")
+          .attr("x1", width / 2)
+          .attr("x2", width / 2)
+          .attr("y1", 0)
+          .attr("y2", height)
+          .attr("stroke", "black")
+          .attr("stroke-width", 3);
+
+        viz
+          .append("line")
+          .attr("y1", yScale(maxDiscount / 2))
+          .attr("y2", yScale(maxDiscount / 2))
+          .attr("x1", 0)
+          .attr("x2", width)
+          .attr("stroke", "black")
+          .attr("stroke-width", 3);
+
+        viz
+          .append("text")
+          .attr("x", xScale(3.75))
+          .attr("y", yScale(maxDiscount * 0.75))
+          .text((d) => data[0])
+          .attr("fill", "black")
+          .attr("font-size", 100)
+          .attr("font-family", "Poppins-Bold")
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle");
+
+        viz
+          .append("text")
+          .attr("x", xScale(1.25))
+          .attr("y", yScale(maxDiscount * 0.75))
+          .text((d) => data[1])
+          .attr("fill", "black")
+          .attr("font-size", 100)
+          .attr("font-family", "Poppins-Bold")
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle");
+
+        viz
+          .append("text")
+          .attr("x", xScale(1.25))
+          .attr("y", yScale(maxDiscount * 0.25))
+          .text((d) => data[2])
+          .attr("fill", "black")
+          .attr("font-size", 100)
+          .attr("font-family", "Poppins-Bold")
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle");
+
+        viz
+          .append("text")
+          .attr("x", xScale(3.75))
+          .attr("y", yScale(maxDiscount * 0.25))
+          .text((d) => data[3])
+          .attr("fill", "black")
+          .attr("font-size", 100)
+          .attr("font-family", "Poppins-Bold")
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle");
+      }
+
+      fetchData(false);
+
+      // Scales
+    </script>
+  </body>
+</html>

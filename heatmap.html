@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="retro" style="background-color: #ffdd95ff">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Burtin's Antibiotic Data Visualization</title>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script src="subcategories.js"></script>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@2.6.0/dist/full.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html,
+      body {
+        height: 100%; /* Ensures that html and body occupy full height */
+        margin: 0; /* Removes default margin provided by browsers */
+        padding: 0; /* Removes default padding */
+      }
+
+      @font-face {
+        font-family: "Poppins-Bold";
+        src: url("fonts/Poppins-Bold.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-Regular";
+        src: url("Poppins-Regular.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-Medium";
+        src: url("Poppins-Medium.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-SemiBold";
+        src: url("Poppins-SemiBold.ttf");
+      }
+
+      .poppins-regular {
+        font-family: "Poppins-Regular", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        font-size: 15px;
+      }
+
+      .poppins-medium {
+        font-family: "Poppins-Medium", sans-serif;
+        font-weight: 500;
+        font-style: normal;
+      }
+
+      .poppins-semibold {
+        font-family: "Poppins-SemiBold", sans-serif;
+        font-weight: 600;
+        font-style: normal;
+      }
+
+      .poppins-bold {
+        font-family: "Poppins-Bold", sans-serif;
+        font-weight: 700;
+        font-style: normal;
+      }
+      #mobileRestrictionMessage {
+        display: none;
+        text-align: center;
+        margin-top: 50px;
+      }
+    </style>
+  </head>
+  <body class="container w-full">
+    <div class="max-w-xs mx-auto">
+      <label class="form-control max-w-xs">
+        <div class="label">
+          <span class="label-text">Subcategories</span>
+        </div>
+        <select
+          class="select select-bordered select-xs"
+          id="subcategory"
+        ></select>
+        <div class="label"></div>
+      </label>
+    </div>
+
+    <div id="viz"></div>
+
+    <style>
+      @font-face {
+        font-family: "Poppins-Bold";
+        src: url("fonts/Poppins-Bold.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-Regular";
+        src: url("fonts/Poppins-Regular.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-Medium";
+        src: url("fonts/Poppins-Medium.ttf");
+      }
+      @font-face {
+        font-family: "Poppins-SemiBold";
+        src: url("fonts/Poppins-SemiBold.ttf");
+      }
+
+      .poppins-regular {
+        font-family: "Poppins-Regular", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        font-size: 15px;
+      }
+
+      .poppins-medium {
+        font-family: "Poppins-Medium", sans-serif;
+        font-weight: 500;
+        font-style: normal;
+      }
+
+      .poppins-semibold {
+        font-family: "Poppins-SemiBold", sans-serif;
+        font-weight: 600;
+        font-style: normal;
+      }
+
+      .poppins-bold {
+        font-family: "Poppins-Bold", sans-serif;
+        font-weight: 700;
+        font-style: normal;
+      }
+      #mobileRestrictionMessage {
+        display: none;
+        text-align: center;
+        margin-top: 50px;
+      }
+    </style>
+
+    <script>
+      // Get the height and width of the current viewport
+      var viewportWidth = Math.max(
+        document.documentElement.clientWidth || 0,
+        window.innerWidth || 0
+      );
+      var viewportHeight = Math.max(
+        document.documentElement.clientHeight || 0,
+        window.innerHeight || 0
+      );
+
+      const tooltip = d3
+        .select("body")
+        .append("div")
+        .style("position", "absolute")
+        .style("text-align", "center")
+        .style("color", "white")
+        .attr("class", "poppins-regular")
+        .style("background", "#265073")
+        .style("opacity", 1)
+        .style("margin", "10px");
+
+      d3.select("body").style("background-color", "#ffdd95ff");
+
+      // set the dimensions and margins of the graph
+      const margin = { top: 80, right: 80, bottom: 80, left: 80 };
+      let width = viewportWidth - margin.left - margin.right;
+      let height = viewportHeight - margin.top - margin.bottom;
+
+      document.getElementById("subcategory").innerHTML = "";
+      subcategories.forEach((subcategory) => {
+        const option = document.createElement("option");
+        option.value = encodeURIComponent(subcategory);
+        option.text = subcategory;
+        document.getElementById("subcategory").appendChild(option);
+      });
+
+      document.getElementById("subcategory").addEventListener("change", () => {
+        clearGraph(); // Clear the graph before fetching data
+        fetchData();
+      });
+
+      function fetchData() {
+        const name = document.getElementById("subcategory").value;
+
+        const URL = `http://localhost:5000/h?subcategory=${name}`;
+
+        fetch(URL)
+          .then((response) => response.json())
+          .then((D) => {
+            drawGraph(D);
+          })
+          .catch((error) => {
+            // Handle any errors here
+            console.error(error);
+          });
+      }
+
+      function clearGraph() {
+        document.getElementById("viz").innerHTML = "";
+      }
+
+      function drawGraph(data) {
+        let viz = d3
+          .select("#viz")
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr(
+            "transform",
+            "translate(" + margin.left + "," + margin.top + ")"
+          );
+
+        const xRange = Array.from(
+          { length: data[1]["max_length"] },
+          (_, index) => index + 1
+        );
+        const yRange = Array.from(
+          { length: data[1]["num_bins"] },
+          (_, index) => index + 1
+        );
+        const maxRating = data[1]["max_rating"];
+        const minRating = data[1]["min_rating"];
+
+        data = data[0];
+
+        const xScale = d3
+          .scaleBand()
+          .range([0, width])
+          .domain(xRange)
+          .padding(0.01);
+
+        const yScale = d3
+          .scaleBand()
+          .range([height, 0])
+          .domain(yRange)
+          .padding(0.01);
+
+        colors = ["#EF6262", "#468B97", "#1D5B79", "#F3AA60"];
+
+        // Build color scale
+        const colorScale = d3
+          .scaleLinear()
+          .domain([minRating, maxRating])
+          .range(colors);
+
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale);
+
+        viz
+          .append("g")
+          .attr("transform", `translate(0,${height})`)
+          .style("font-family", "Poppins-Bold")
+          .call(xAxis);
+
+        viz
+          .append("g")
+          .attr("transform", `translate(0,0)`)
+          .style("font-family", "Poppins-Bold")
+          .call(yAxis);
+
+        viz
+          .selectAll("rect.brand")
+          .data(data)
+          .join("rect")
+          .attr("x", function (d) {
+            console.log(d);
+            return xScale(d.brand_serial);
+          })
+          .attr("y", function (d) {
+            return yScale(d.rating_bin);
+          })
+          .attr("fill", function (d) {
+            return colorScale(d.product_rating_mean);
+          })
+          .attr("width", xScale.bandwidth())
+          .attr("height", yScale.bandwidth())
+          .on("mouseover", function (event, d) {
+            d3.select(this).attr("fill-opacity", 1);
+            tooltip.transition().duration(200).style("opacity", 1);
+            tooltip
+              .html(
+                `<span class='poppins-semibold'>${parseFloat(
+                  d.product_rating_mean
+                ).toFixed(2)}</span>
+                  <br/>
+                  <span class='poppins-regular'>Brand : ${d.brand_name}</span>`
+              )
+              .style("left", event.pageX + 5 + "px")
+              .style("top", event.pageY - 28 + "px");
+          })
+          .on("mouseout", function (event, d) {
+            d3.select(this).attr("fill-opacity", d.opacity);
+            tooltip.transition().duration(500).style("opacity", 0);
+          });
+      }
+
+      fetchData();
+    </script>
+  </body>
+</html>
